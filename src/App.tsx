@@ -626,7 +626,7 @@ const AuthSystem = ({ onUnlock }: { onUnlock: (role: UserRole) => void }) => {
         >
           <div className="space-y-4">
             <motion.a
-              href="https://eyedeaz.com"
+              href="https://eyedeaz227.com"
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.07, filter: 'drop-shadow(0 0 24px rgba(168,85,247,0.55))' }}
