@@ -2907,76 +2907,221 @@ function AutomationView({ models }: { models: Model[] }) {
           </div>
         </div>
       ) : (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          <div className="flex justify-between items-center">
+          {/* Header */}
+          <div className="flex justify-between items-center flex-wrap gap-3">
             <h3 className="text-xl font-bold flex items-center gap-2">
-              <CheckCircle2 className="text-green-400" /> نتائج المعالجة (التقرير النهائي)
+              <CheckCircle2 className="text-green-400" size={22} /> التقرير المالي النهائي
             </h3>
-            <button 
-              onClick={() => {
-                setShowResults(false);
-                setManualId("");
-                setManualEarnings("");
-                setUploadedData([]);
-                setUploadProgress(0);
-              }}
-              className="text-sm text-white/40 hover:text-white transition-colors flex items-center gap-2"
+            <button
+              onClick={() => { setShowResults(false); setManualId(""); setManualEarnings(""); setUploadedData([]); setUploadProgress(0); }}
+              className="btn-ghost text-sm px-4 py-2 flex items-center gap-2"
             >
               <RefreshCw size={14} /> معالجة جديدة
             </button>
           </div>
 
-          <div className="glass-card overflow-hidden border-white/5">
-            <table className="w-full text-right">
+          {/* Summary cards */}
+          {(() => {
+            const totalPoints   = uploadedData.reduce((s, r) => s + r.earnings, 0);
+            const totalBonus    = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).bonus, 0);
+            const totalSalary   = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).hostSalary, 0);
+            const totalAgent    = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).agentShare, 0);
+            const totalPayout   = totalBonus + totalAgent;
+            return (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[
+                  { label: 'إجمالي النقاط', value: totalPoints.toLocaleString(), sub: 'نقطة', color: 'text-brand-gold', bg: 'bg-brand-gold/10', icon: TrendingUp },
+                  { label: 'إجمالي المكافآت', value: `$${totalBonus.toLocaleString()}`, sub: 'USD', color: 'text-green-400', bg: 'bg-green-500/10', icon: Award },
+                  { label: 'إجمالي رواتب المضيفات', value: `$${totalSalary.toLocaleString()}`, sub: 'USD', color: 'text-blue-400', bg: 'bg-blue-500/10', icon: Users },
+                  { label: 'عمولة الوكيل الكلية', value: `$${totalAgent.toLocaleString()}`, sub: `إجمالي الصرف: $${totalPayout.toLocaleString()}`, color: 'text-brand-purple-light', bg: 'bg-brand-purple/10', icon: DollarSign },
+                ].map((s, i) => (
+                  <div key={i} className={cn('glass-card p-4 space-y-2 border-white/5', s.bg)}>
+                    <div className={cn('p-2 rounded-lg bg-black/20 w-fit', s.color)}><s.icon size={16} /></div>
+                    <p className="text-[9px] text-white/40 font-bold uppercase">{s.label}</p>
+                    <p className={cn('text-lg font-black', s.color)}>{s.value}</p>
+                    <p className="text-[9px] text-white/25">{s.sub}</p>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+
+          {/* Main results table */}
+          <div className="glass-card overflow-x-auto border-white/5">
+            <table className="w-full text-right min-w-[780px]">
               <thead>
                 <tr className="bg-white/5 border-b border-white/5">
-                  <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase">المذيعة</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase">النقاط</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase">المستوى</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase">المكافأة</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase">صافي الراتب</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase">نسبة الوكيل</th>
+                  <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">#</th>
+                  <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">المذيعة</th>
+                  <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">النقاط الشهرية</th>
+                  <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">المستوى</th>
+                  <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">التقدم للمستوى التالي</th>
+                  <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">المكافأة</th>
+                  <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">الراتب</th>
+                  <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">عمولة الوكيل</th>
+                  <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">الحالة</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {uploadedData.map((row, idx) => {
-                  const level = getLevelForEarnings(row.earnings);
+                  const level      = getLevelForEarnings(row.earnings);
+                  const levelIdx   = LEVELS.findIndex(l => l.name === level.name);
+                  const nextLevel  = LEVELS[levelIdx + 1] || null;
+                  const pointsToNext = nextLevel ? nextLevel.threshold - row.earnings : 0;
+                  const progressPct = nextLevel
+                    ? Math.min(100, Math.round(((row.earnings - level.threshold) / (nextLevel.threshold - level.threshold)) * 100))
+                    : 100;
+                  const isMaxLevel = !nextLevel;
+                  // Performance status
+                  const pct = row.earnings / level.threshold * 100;
+                  const perfStatus = row.earnings >= level.threshold
+                    ? 'achieved'
+                    : pct >= 80 ? 'near' : 'under';
+                  const perfColors = { achieved: 'text-green-400 bg-green-500/10', near: 'text-brand-gold bg-brand-gold/10', under: 'text-red-400 bg-red-500/10' };
+                  const perfLabels = { achieved: 'تم الإنجاز ✓', near: 'قريب من الهدف', under: 'أداء منخفض' };
                   return (
-                    <tr key={idx} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3 justify-end">
-                          <span className="font-bold">{row.name}</span>
-                          <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[10px] text-white/40">
-                            {String(row.id).slice(-3)}
+                    <tr key={idx} className="hover:bg-white/4 transition-colors">
+                      <td className="px-4 py-4 text-white/30 font-bold text-sm">{idx + 1}</td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-2 justify-end">
+                          <div>
+                            <p className="font-bold text-sm">{row.name}</p>
+                            <p className="text-[10px] text-white/30">ID: {row.id}</p>
+                          </div>
+                          <div className="w-8 h-8 rounded-xl bg-brand-gold/10 border border-brand-gold/20 flex items-center justify-center text-[10px] text-brand-gold font-black shrink-0">
+                            {String(row.id).slice(-2)}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 font-mono text-brand-gold">{row.earnings.toLocaleString()}</td>
-                      <td className="px-6 py-4">
-                        <span className="px-2 py-1 rounded-md bg-brand-purple/10 text-brand-purple text-[10px] font-bold border border-brand-purple/20">
-                          {level.name}
+                      <td className="px-4 py-4">
+                        <p className="font-black text-brand-gold">{row.earnings.toLocaleString()}</p>
+                        <p className="text-[9px] text-white/30">نقطة</p>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex flex-col gap-1 items-end">
+                          <span className="px-2.5 py-1 rounded-lg bg-brand-purple/15 text-brand-purple-light text-xs font-black border border-brand-purple/20">
+                            {level.name}
+                          </span>
+                          <span className="text-[9px] text-white/25">VIP {level.vipLevel}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 min-w-[160px]">
+                        {isMaxLevel ? (
+                          <span className="text-[10px] text-brand-gold font-bold">🏆 أعلى مستوى</span>
+                        ) : (
+                          <div className="space-y-1.5">
+                            <div className="flex justify-between text-[9px] font-bold">
+                              <span className="text-white/40">{nextLevel!.name}</span>
+                              <span className="text-white/50">{pointsToNext.toLocaleString()} نقطة</span>
+                            </div>
+                            <div className="h-1.5 bg-white/8 rounded-full overflow-hidden">
+                              <div
+                                className={cn('h-full rounded-full transition-all', progressPct >= 80 ? 'bg-brand-gold' : progressPct >= 50 ? 'bg-blue-400' : 'bg-white/30')}
+                                style={{ width: `${progressPct}%` }}
+                              />
+                            </div>
+                            <p className="text-[9px] text-white/30 text-left">{progressPct}%</p>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-4">
+                        <p className="text-green-400 font-black">${level.bonus.toLocaleString()}</p>
+                        <p className="text-[9px] text-white/30">مكافأة</p>
+                      </td>
+                      <td className="px-4 py-4">
+                        <p className="font-black">${level.hostSalary.toLocaleString()}</p>
+                        <p className="text-[9px] text-white/30">راتب صافي</p>
+                      </td>
+                      <td className="px-4 py-4">
+                        <p className="text-brand-gold font-black">${level.agentShare.toLocaleString()}</p>
+                        <p className="text-[9px] text-white/30">للوكيل</p>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className={cn('px-2.5 py-1 rounded-xl text-[10px] font-black', perfColors[perfStatus])}>
+                          {perfLabels[perfStatus]}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-green-400 font-bold">${level.bonus.toLocaleString()}</td>
-                      <td className="px-6 py-4 font-bold">${level.hostSalary.toLocaleString()}</td>
-                      <td className="px-6 py-4 text-brand-gold font-bold">${level.agentShare.toLocaleString()}</td>
                     </tr>
                   );
                 })}
               </tbody>
+              {/* Totals row */}
+              {uploadedData.length > 1 && (() => {
+                const tPts  = uploadedData.reduce((s, r) => s + r.earnings, 0);
+                const tBon  = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).bonus, 0);
+                const tSal  = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).hostSalary, 0);
+                const tAgt  = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).agentShare, 0);
+                return (
+                  <tfoot>
+                    <tr className="bg-brand-gold/5 border-t-2 border-brand-gold/20">
+                      <td colSpan={2} className="px-4 py-4 font-black text-brand-gold text-sm">الإجمالي ({uploadedData.length} مذيعة)</td>
+                      <td className="px-4 py-4 font-black text-brand-gold">{tPts.toLocaleString()}</td>
+                      <td colSpan={2} />
+                      <td className="px-4 py-4 font-black text-green-400">${tBon.toLocaleString()}</td>
+                      <td className="px-4 py-4 font-black">${tSal.toLocaleString()}</td>
+                      <td className="px-4 py-4 font-black text-brand-gold">${tAgt.toLocaleString()}</td>
+                      <td />
+                    </tr>
+                  </tfoot>
+                );
+              })()}
             </table>
           </div>
 
-          <div className="flex justify-end gap-4">
-            <button className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl text-sm font-bold hover:bg-white/10 transition-colors">
-              تصدير كملف PDF
+          {/* Levels reference */}
+          <details className="glass-card border-white/5 group">
+            <summary className="p-4 cursor-pointer flex items-center justify-between list-none">
+              <span className="text-sm font-bold flex items-center gap-2 text-white/70">
+                <Target size={15} className="text-brand-gold" /> جدول المستويات والمكافآت الكاملة
+              </span>
+              <ChevronRight size={14} className="text-white/30 group-open:rotate-90 transition-transform" />
+            </summary>
+            <div className="overflow-x-auto border-t border-white/5">
+              <table className="w-full text-right text-xs min-w-[600px]">
+                <thead>
+                  <tr className="bg-white/3">
+                    {['المستوى','الحد الأدنى للنقاط','المكافأة','الراتب الصافي','عمولة الوكيل','VIP'].map(h => (
+                      <th key={h} className="px-4 py-2.5 text-[9px] font-black text-white/35 uppercase tracking-wider">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/4">
+                  {LEVELS.map((l) => {
+                    const isTop = l.name === 'SS2';
+                    return (
+                      <tr key={l.name} className={cn('hover:bg-white/4 transition-colors', isTop && 'bg-brand-gold/5')}>
+                        <td className="px-4 py-2.5">
+                          <span className={cn('font-black', l.name.startsWith('SS') ? 'text-brand-gold' : l.name.startsWith('S') ? 'text-purple-300' : l.name.startsWith('A') ? 'text-blue-300' : 'text-white/70')}>
+                            {l.name}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5 font-mono text-white/60">{l.threshold.toLocaleString()}</td>
+                        <td className="px-4 py-2.5 text-green-400 font-bold">${l.bonus.toLocaleString()}</td>
+                        <td className="px-4 py-2.5 font-bold">${l.hostSalary.toLocaleString()}</td>
+                        <td className="px-4 py-2.5 text-brand-gold font-bold">${l.agentShare.toLocaleString()}</td>
+                        <td className="px-4 py-2.5 text-white/40">{l.vipLevel}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </details>
+
+          <div className="flex justify-end gap-3 flex-wrap">
+            <button
+              onClick={() => { setShowResults(false); setManualId(""); setManualEarnings(""); setUploadedData([]); setUploadProgress(0); }}
+              className="btn-ghost px-5 py-2.5 text-sm flex items-center gap-2"
+            >
+              <RefreshCw size={14} /> معالجة جديدة
             </button>
-            <button className="bg-brand-gold text-black px-8 py-3 rounded-xl text-sm font-black hover:bg-brand-gold/80 transition-all">
-              اعتماد النتائج وحفظها
+            <button className="btn-gold px-6 py-2.5 text-sm flex items-center gap-2">
+              <CheckCircle size={15} /> اعتماد النتائج وحفظها
             </button>
           </div>
         </motion.div>
