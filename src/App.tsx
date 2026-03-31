@@ -2654,49 +2654,90 @@ function AutomationView({ models }: { models: Model[] }) {
   const [manualId, setManualId] = useState("");
   const [manualEarnings, setManualEarnings] = useState("");
   const [error, setError] = useState("");
+  const [uploadedData, setUploadedData] = useState<Array<{ id: string; name: string; earnings: number }>>([]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    // Check if any model is missing WhatsApp number
-    const missingWhatsApp = models.some(m => !m.whatsapp_number);
-    if (missingWhatsApp) {
-      setError("رقم واتساب مطلوب لكل مذيعة قبل المتابعة");
-      return;
-    }
-
-    setIsUploading(true);
+    if (acceptedFiles.length === 0) return;
+    const file = acceptedFiles[0];
     setError("");
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    // Animate progress
     let progress = 0;
     const interval = setInterval(() => {
-      progress += 10;
-      setUploadProgress(progress);
-      if (progress >= 100) {
-        clearInterval(interval);
-        setIsUploading(false);
-        setIsCalculating(true);
-        setTimeout(() => {
-          setIsCalculating(false);
-          setShowResults(true);
-        }, 2000);
+      progress += 12;
+      setUploadProgress(Math.min(progress, 90));
+      if (progress >= 90) clearInterval(interval);
+    }, 150);
+
+    try {
+      let parsed: Array<{ id: string; name: string; earnings: number }> = [];
+
+      if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+        const text = await file.text();
+        const lines = text.trim().split('\n').filter(Boolean);
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+          const row: Record<string, string> = {};
+          headers.forEach((h, idx) => { row[h] = values[idx] || ''; });
+          const id = row['id'] || row['معرف'] || row['model_id'] || `صف-${i}`;
+          const name = row['name'] || row['اسم'] || row['المذيعة'] || `مذيعة ${i}`;
+          const earnings = Number(row['earnings'] || row['نقاط'] || row['points'] || row['total'] || 0);
+          if (!isNaN(earnings)) parsed.push({ id, name, earnings });
+        }
+      } else if (file.type === 'application/json' || file.name.endsWith('.json')) {
+        const text = await file.text();
+        const json = JSON.parse(text);
+        const arr: any[] = Array.isArray(json) ? json : [json];
+        parsed = arr.map((item: any, i: number) => ({
+          id: String(item.id || item.معرف || item.model_id || `json-${i}`),
+          name: String(item.name || item.اسم || item.المذيعة || `مذيعة ${i + 1}`),
+          earnings: Number(item.earnings || item.نقاط || item.points || item.total || 0),
+        }));
+      } else {
+        // Image / unsupported format — demo with current models data
+        parsed = models.map(m => ({ id: m.id, name: m.name, earnings: m.earnings_month }));
       }
-    }, 200);
+
+      clearInterval(interval);
+      setUploadProgress(100);
+      setIsUploading(false);
+
+      if (parsed.length === 0) {
+        setError("لم يتم العثور على بيانات قابلة للمعالجة في الملف");
+        return;
+      }
+
+      setUploadedData(parsed);
+      setIsCalculating(true);
+      setTimeout(() => { setIsCalculating(false); setShowResults(true); }, 1500);
+
+    } catch {
+      clearInterval(interval);
+      setIsUploading(false);
+      setUploadProgress(0);
+      setError("خطأ في قراءة الملف — تأكد من صيغة CSV أو JSON صحيحة");
+    }
   }, [models]);
 
   const handleManualProcess = () => {
     if (!manualId || !manualEarnings) return;
-    
-    // Check if the model exists and has a WhatsApp number
-    const model = models.find(m => m.id === manualId);
-    if (model && !model.whatsapp_number) {
-      setError("رقم واتساب مطلوب لكل مذيعة قبل المتابعة");
+    const earnings = Number(manualEarnings);
+    if (isNaN(earnings) || earnings < 0) {
+      setError("أدخل رقماً صحيحاً للنقاط");
       return;
     }
-
-    setIsCalculating(true);
+    const existing = models.find(m => m.id === manualId);
+    setUploadedData([{
+      id: manualId,
+      name: existing?.name || `مذيعة ${manualId}`,
+      earnings,
+    }]);
     setError("");
-    setTimeout(() => {
-      setIsCalculating(false);
-      setShowResults(true);
-    }, 1500);
+    setIsCalculating(true);
+    setTimeout(() => { setIsCalculating(false); setShowResults(true); }, 1000);
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
@@ -2827,7 +2868,7 @@ function AutomationView({ models }: { models: Model[] }) {
                     type="text" 
                     value={manualId}
                     onChange={(e) => setManualId(e.target.value)}
-                    placeholder="مثال: MOD-772"
+                    placeholder="مثال: 101 أو 102"
                     className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-right focus:border-brand-gold outline-none transition-all"
                   />
                 </div>
@@ -2880,6 +2921,8 @@ function AutomationView({ models }: { models: Model[] }) {
                 setShowResults(false);
                 setManualId("");
                 setManualEarnings("");
+                setUploadedData([]);
+                setUploadProgress(0);
               }}
               className="text-sm text-white/40 hover:text-white transition-colors flex items-center gap-2"
             >
@@ -2900,31 +2943,27 @@ function AutomationView({ models }: { models: Model[] }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {(manualId ? [
-                  { id: manualId, name: "إدخال يدوي", earnings: Number(manualEarnings) },
-                  ...MOCK_MODELS.slice(0, 4)
-                ] : models.slice(0, 5)).map((model, idx) => {
-                  const level = getLevelForEarnings(model.earnings);
-                  const fullModel = models.find(m => m.id === model.id) || model;
+                {uploadedData.map((row, idx) => {
+                  const level = getLevelForEarnings(row.earnings);
                   return (
                     <tr key={idx} className="hover:bg-white/5 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3 justify-end">
-                          <span className="font-bold">{fullModel.name}</span>
+                          <span className="font-bold">{row.name}</span>
                           <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[10px] text-white/40">
-                            {fullModel.id.toString().slice(-3)}
+                            {String(row.id).slice(-3)}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 font-mono text-brand-gold">{model.earnings.toLocaleString()}</td>
+                      <td className="px-6 py-4 font-mono text-brand-gold">{row.earnings.toLocaleString()}</td>
                       <td className="px-6 py-4">
                         <span className="px-2 py-1 rounded-md bg-brand-purple/10 text-brand-purple text-[10px] font-bold border border-brand-purple/20">
                           {level.name}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-green-400 font-bold">${level.bonus}</td>
-                      <td className="px-6 py-4 font-bold">${level.hostSalary}</td>
-                      <td className="px-6 py-4 text-brand-gold font-bold">${level.agentShare}</td>
+                      <td className="px-6 py-4 text-green-400 font-bold">${level.bonus.toLocaleString()}</td>
+                      <td className="px-6 py-4 font-bold">${level.hostSalary.toLocaleString()}</td>
+                      <td className="px-6 py-4 text-brand-gold font-bold">${level.agentShare.toLocaleString()}</td>
                     </tr>
                   );
                 })}
