@@ -4,6 +4,14 @@ import { useNetworkStatus } from './lib/useNetworkStatus';
 import { SectionErrorBoundary } from './lib/ErrorBoundary';
 import { getSessionHealth, getErrorLog } from './lib/errorLogger';
 import { cancelAllRequests } from './lib/fetchWithRetry';
+import {
+  DashboardSkeleton,
+  ModelsViewSkeleton,
+  NotificationsViewSkeleton,
+  SettingsSkeleton,
+  TableRowSkeleton,
+  SkeletonBlock,
+} from './lib/Skeleton';
 import { 
   LayoutDashboard, 
   Users, 
@@ -107,13 +115,14 @@ function BottomNav({ activeTab, setActiveTab, navItems, role }: {
   role: 'agent' | 'supervisor'
 }) {
   const mobileNavItems = navItems.filter(item =>
-    ['dashboard', 'models', 'notifications', 'settings'].includes(item.id)
+    ['dashboard', 'models', 'automation', 'notifications', 'settings'].includes(item.id)
   );
 
   // Short Arabic labels for the bottom nav
   const mobileLabels: Record<string, string> = {
     dashboard: 'الرئيسية',
     models: 'المذيعات',
+    automation: 'رفع البيانات',
     notifications: 'الإشعارات',
     settings: 'الإعدادات',
   };
@@ -122,7 +131,7 @@ function BottomNav({ activeTab, setActiveTab, navItems, role }: {
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bottom-nav-safe">
       {/* Blur backdrop */}
       <div className="absolute inset-0 bg-black/85 backdrop-blur-2xl border-t border-white/10" />
-      <div className="relative flex justify-around items-center px-2 pt-2 pb-1">
+      <div className="relative flex justify-around items-center px-1 pt-2 pb-1">
         {mobileNavItems.map((item) => {
           const isActive = activeTab === item.id;
           return (
@@ -133,18 +142,18 @@ function BottomNav({ activeTab, setActiveTab, navItems, role }: {
                 setActiveTab(item.id);
               }}
               className={cn(
-                "flex flex-col items-center gap-1.5 py-2 px-4 rounded-2xl transition-all duration-200 min-w-[64px]",
+                "flex flex-col items-center gap-1 py-1.5 px-2 rounded-2xl transition-all duration-200 min-w-[52px] flex-1",
                 isActive
                   ? "text-brand-gold"
                   : "text-white/35 active:text-white/60"
               )}
             >
               <div className={cn(
-                "relative flex items-center justify-center w-10 h-7 rounded-xl transition-all duration-200",
+                "relative flex items-center justify-center w-9 h-6 rounded-xl transition-all duration-200",
                 isActive && "bg-brand-gold/15"
               )}>
                 <item.icon
-                  size={21}
+                  size={19}
                   strokeWidth={isActive ? 2.5 : 1.8}
                   className={cn(
                     "transition-all duration-200",
@@ -157,7 +166,7 @@ function BottomNav({ activeTab, setActiveTab, navItems, role }: {
                 )}
               </div>
               <span className={cn(
-                "text-[10px] font-bold tracking-wide transition-all duration-200",
+                "text-[9px] font-bold tracking-wide transition-all duration-200",
                 isActive ? "text-brand-gold" : "text-white/35"
               )}>
                 {mobileLabels[item.id] || item.label}
@@ -366,6 +375,11 @@ function SystemHealthPanel() {
 }
 
 const SettingsView = ({ userRole, onLogout }: { userRole: UserRole, onLogout: () => void }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setIsLoading(false), 400);
+    return () => clearTimeout(t);
+  }, []);
   const [agentPin, setAgentPin] = useState(localStorage.getItem('pin_agent') || '0000');
   const [supervisorPin, setSupervisorPin] = useState(localStorage.getItem('pin_supervisor') || '0000');
   const [isChangingAgent, setIsChangingAgent] = useState(false);
@@ -390,8 +404,10 @@ const SettingsView = ({ userRole, onLogout }: { userRole: UserRole, onLogout: ()
     setError('');
   };
 
+  if (isLoading) return <SettingsSkeleton />;
+
   return (
-    <div className="space-y-8 max-w-2xl mx-auto py-10">
+    <div className="space-y-8 max-w-2xl mx-auto py-10 animate-float-up">
       <div className="glass-card p-8 space-y-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
@@ -1151,8 +1167,8 @@ export default function App() {
     { id: 'models', label: 'إدارة المذيعات', icon: Users },
     ...(userRole === 'agent' ? [
       { id: 'team', label: 'فريق الإشراف', icon: Briefcase },
-      { id: 'automation', label: 'الأتمتة والرفع', icon: UploadCloud },
     ] : []),
+    { id: 'automation', label: 'الأتمتة والرفع', icon: UploadCloud },
     { id: 'notifications', label: 'التنبيهات', icon: Bell },
     { id: 'chat', label: 'المحادثات', icon: MessageSquare },
     { id: 'schedule', label: 'الجدول والمهام', icon: Calendar },
@@ -1531,6 +1547,11 @@ export default function App() {
 
 function DashboardView({ userRole, models }: { userRole: UserRole, models: Model[] }) {
   const [trendView, setTrendView] = useState<'weekly' | 'monthly'>('weekly');
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(t);
+  }, []);
   const totalEarnings = models.reduce((acc, m) => acc + m.earnings, 0);
   const totalBonuses = models.reduce((acc, m) => acc + getLevelForEarnings(m.earnings).bonus, 0);
   const totalAgentShare = models.reduce((acc, m) => acc + getLevelForEarnings(m.earnings).agentShare, 0);
@@ -1548,6 +1569,8 @@ function DashboardView({ userRole, models }: { userRole: UserRole, models: Model
     color: name === 'S' || name === 'A' ? '#D4AF37' : name === 'B' || name === 'C' ? '#A855F7' : '#ffffff20'
   }));
 
+  if (isLoading) return <DashboardSkeleton />;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -1555,6 +1578,12 @@ function DashboardView({ userRole, models }: { userRole: UserRole, models: Model
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
+      {/* Desktop breadcrumb */}
+      <div className="hidden md:flex items-center gap-2 breadcrumb mb-2">
+        <span className="breadcrumb-active">لوحة التحكم</span>
+        <ChevronRight size={12} className="breadcrumb-sep" />
+        <span>{userRole === 'agent' ? 'وكيل' : 'مشرف'}</span>
+      </div>
       {/* MOBILE: Horizontally swipeable stat cards */}
       <div className="md:hidden -mx-4 px-4">
         <div className="flex gap-3 overflow-x-auto scrollbar-hide snap-x-mandatory pb-2">
@@ -1784,13 +1813,18 @@ function DashboardView({ userRole, models }: { userRole: UserRole, models: Model
   );
 }
 
-function ModelsView({ userRole, models, setModels, showAddModal, setShowAddModal }: { 
-  userRole: UserRole, 
-  models: Model[], 
+function ModelsView({ userRole, models, setModels, showAddModal, setShowAddModal }: {
+  userRole: UserRole,
+  models: Model[],
   setModels: React.Dispatch<React.SetStateAction<Model[]>>,
   showAddModal: boolean,
   setShowAddModal: (show: boolean) => void
 }) {
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setIsLoading(false), 700);
+    return () => clearTimeout(t);
+  }, []);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'online' | 'offline' | 'inactive'>('all');
   const [comparisonList, setComparisonList] = useState<string[]>([]);
@@ -1885,8 +1919,10 @@ function ModelsView({ userRole, models, setModels, showAddModal, setShowAddModal
     return <ModelComparisonView selectedIds={comparisonList} onBack={() => setShowComparison(false)} />;
   }
 
+  if (isLoading) return <ModelsViewSkeleton />;
+
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
@@ -1953,15 +1989,15 @@ function ModelsView({ userRole, models, setModels, showAddModal, setShowAddModal
               )}
 
               <div className="flex gap-3">
-                <button 
+                <button
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 rounded-xl font-bold transition-all"
+                  className="btn-ghost flex-1 py-3 text-sm"
                 >
                   إلغاء
                 </button>
-                <button 
+                <button
                   onClick={handleAddModel}
-                  className="flex-1 py-3 bg-brand-gold text-black rounded-xl font-bold hover:bg-brand-gold/80 transition-all"
+                  className="btn-gold flex-1 py-3 text-sm"
                 >
                   حفظ المذيعة
                 </button>
@@ -2034,49 +2070,59 @@ function ModelsView({ userRole, models, setModels, showAddModal, setShowAddModal
         ))}
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h2 className="text-2xl font-bold">إدارة المذيعات</h2>
-        <div className="flex flex-wrap gap-3 w-full md:w-auto">
-          <div className="relative flex-1 md:w-64">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30" size={18} />
-            <input 
-              type="text" 
-              placeholder="بحث بالاسم أو المعرف..." 
-              className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pr-10 pl-4 text-sm focus:outline-none focus:border-brand-gold/50 transition-colors text-right"
-              dir="rtl"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+      {/* Sticky header for models */}
+      <div className="sticky-header -mx-4 px-4 py-3 md:static md:mx-0 md:px-0 md:py-0 md:bg-transparent md:backdrop-blur-none md:border-none">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <div>
+            <div className="hidden md:flex items-center gap-2 breadcrumb mb-1">
+              <span className="breadcrumb-active">المذيعات</span>
+              <ChevronRight size={12} className="breadcrumb-sep" />
+              <span>{filteredModels.length} نتيجة</span>
+            </div>
+            <h2 className="text-xl md:text-2xl font-bold">إدارة المذيعات</h2>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide w-full md:w-auto">
-            {[
-              { id: 'all', label: 'الكل' },
-              { id: 'online', label: 'متصل' },
-              { id: 'offline', label: 'غير متصل' },
-              { id: 'inactive', label: 'خاملة' }
-            ].map((filter) => (
+          <div className="flex flex-wrap gap-2 w-full md:w-auto">
+            <div className="relative flex-1 md:w-64">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30" size={16} />
+              <input
+                type="text"
+                placeholder="بحث بالاسم أو المعرف..."
+                className="input-field py-2 pr-9 pl-3 text-sm"
+                dir="rtl"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+              {[
+                { id: 'all', label: 'الكل' },
+                { id: 'online', label: 'متصل' },
+                { id: 'offline', label: 'غير متصل' },
+                { id: 'inactive', label: 'خاملة' }
+              ].map((filter) => (
+                <button
+                  key={filter.id}
+                  onClick={() => setStatusFilter(filter.id as any)}
+                  className={cn(
+                    "px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border",
+                    statusFilter === filter.id
+                      ? "bg-brand-gold text-black border-brand-gold"
+                      : "btn-ghost text-xs"
+                  )}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+            {userRole === 'agent' && (
               <button
-                key={filter.id}
-                onClick={() => setStatusFilter(filter.id as any)}
-                className={cn(
-                  "px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border",
-                  statusFilter === filter.id 
-                    ? "bg-brand-gold text-black border-brand-gold" 
-                    : "bg-white/5 text-white/60 border-white/10 hover:bg-white/10"
-                )}
+                onClick={() => setShowAddModal(true)}
+                className="btn-gold hidden md:flex px-4 py-2 text-sm items-center gap-2"
               >
-                {filter.label}
+                <Plus size={16} /> إضافة مذيعة
               </button>
-            ))}
+            )}
           </div>
-          {userRole === 'agent' && (
-            <button 
-              onClick={() => setShowAddModal(true)}
-              className="hidden md:flex bg-brand-gold text-black px-4 py-2 rounded-xl text-sm font-bold items-center gap-2 hover:bg-brand-gold/80 transition-colors"
-            >
-              <Plus size={18} /> إضافة مذيعة جديدة
-            </button>
-          )}
         </div>
       </div>
 
@@ -2097,7 +2143,7 @@ function ModelsView({ userRole, models, setModels, showAddModal, setShowAddModal
               key={model.id}
               layout
               className={cn(
-                "glass-card overflow-hidden border-white/5",
+                "model-card",
                 model.risk_indicator && "border-red-500/20"
               )}
             >
@@ -2646,69 +2692,113 @@ function AutomationView({ models }: { models: Model[] }) {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
+  // Upload phase label
+  const uploadPhaseLabel = isUploading
+    ? `جاري الرفع... ${uploadProgress}%`
+    : isCalculating
+    ? 'جاري التحليل...'
+    : isDragActive
+    ? 'أفلت الملف هنا'
+    : 'اسحب لقطات الشاشة هنا';
+
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="max-w-4xl mx-auto space-y-8"
+      className="max-w-4xl mx-auto space-y-6"
     >
-      <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-brand-gold to-brand-purple bg-clip-text text-transparent">محرك الحسابات الذكي</h2>
-        <p className="text-white/40">قم برفع لقطات الشاشة أو إدخال البيانات يدوياً لحساب الأرباح والعمولات فوراً</p>
+      <div className="space-y-1">
+        <div className="hidden md:flex items-center gap-2 breadcrumb mb-1">
+          <span className="breadcrumb-active">رفع البيانات</span>
+          <ChevronRight size={12} className="breadcrumb-sep" />
+          <span>محرك الحسابات</span>
+        </div>
+        <h2 className="text-2xl md:text-3xl font-bold gold-text">محرك الحسابات الذكي</h2>
+        <p className="text-white/40 text-sm">قم برفع لقطات الشاشة أو إدخال البيانات يدوياً لحساب الأرباح والعمولات فوراً</p>
       </div>
 
       {!showResults ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Upload Section */}
-          <div 
+          <div
             {...getRootProps()}
             className={cn(
-              "glass-card p-12 border-dashed border-2 flex flex-col items-center justify-center space-y-6 bg-white/5 transition-all cursor-pointer h-full min-h-[400px]",
-              isDragActive ? "border-brand-gold bg-brand-gold/5" : "border-white/10"
+              "drop-zone glass-card p-10 flex flex-col items-center justify-center space-y-6 cursor-pointer h-full min-h-[360px] transition-all duration-300",
+              isDragActive && "active",
+              isUploading && "border-brand-gold/50 bg-brand-gold/5"
             )}
           >
             <input {...getInputProps()} />
-            {isUploading ? (
-              <div className="w-full max-w-md space-y-4 text-center">
-                <div className="relative w-24 h-24 mx-auto">
-                  <div className="absolute inset-0 border-4 border-brand-gold/20 rounded-full" />
-                  <div 
-                    className="absolute inset-0 border-4 border-brand-gold rounded-full border-t-transparent animate-spin" 
-                    style={{ animationDuration: '1s' }}
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center font-bold text-brand-gold">
-                    {uploadProgress}%
-                  </div>
-                </div>
-                <p className="text-sm font-bold animate-pulse">جاري رفع ومعالجة الملف...</p>
-              </div>
-            ) : isCalculating ? (
-              <div className="text-center space-y-4">
-                <div className="flex justify-center gap-2">
-                  {[0, 1, 2].map(i => (
-                    <motion.div
-                      key={i}
-                      animate={{ y: [0, -10, 0] }}
-                      transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.1 }}
-                      className="w-3 h-3 bg-brand-purple rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+            <AnimatePresence mode="wait">
+              {isUploading ? (
+                <motion.div
+                  key="uploading"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  className="w-full max-w-xs space-y-5 text-center"
+                >
+                  <div className="relative w-24 h-24 mx-auto">
+                    <div className="absolute inset-0 border-4 border-brand-gold/20 rounded-full" />
+                    <div
+                      className="absolute inset-0 border-4 border-brand-gold rounded-full border-t-transparent animate-spin"
+                      style={{ animationDuration: '1s' }}
                     />
-                  ))}
-                </div>
-                <p className="text-sm font-bold text-brand-purple">جاري تحليل البيانات وتطبيق السياسات...</p>
-              </div>
-            ) : (
-              <>
-                <div className="w-20 h-20 rounded-3xl bg-brand-gold/10 flex items-center justify-center text-brand-gold group-hover:scale-110 transition-transform">
-                  <Upload size={40} />
-                </div>
-                <div className="text-center space-y-2">
-                  <p className="text-lg font-bold">اسحب لقطات الشاشة هنا</p>
-                  <p className="text-sm text-white/30">يدعم الصور والجداول (الحد الأقصى 10MB)</p>
-                </div>
-                <div className="text-xs text-white/20 uppercase font-bold tracking-widest">أو انقر للاختيار</div>
-              </>
-            )}
+                    <div className="absolute inset-0 flex items-center justify-center font-black text-brand-gold text-lg">
+                      {uploadProgress}%
+                    </div>
+                  </div>
+                  <div className="progress-bar">
+                    <div
+                      className="progress-fill bg-brand-gold"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-sm font-bold text-brand-gold">جاري رفع ومعالجة الملف...</p>
+                </motion.div>
+              ) : isCalculating ? (
+                <motion.div
+                  key="calculating"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  className="text-center space-y-4"
+                >
+                  <div className="flex justify-center gap-2">
+                    {[0, 1, 2].map(i => (
+                      <motion.div
+                        key={i}
+                        animate={{ y: [0, -12, 0] }}
+                        transition={{ repeat: Infinity, duration: 0.7, delay: i * 0.15 }}
+                        className="w-3.5 h-3.5 bg-brand-purple-light rounded-full glow-purple"
+                      />
+                    ))}
+                  </div>
+                  <p className="text-sm font-bold text-brand-purple-light">جاري تحليل البيانات وتطبيق السياسات...</p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="idle"
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  className="text-center space-y-4"
+                >
+                  <motion.div
+                    animate={isDragActive ? { scale: 1.15, rotate: 5 } : { scale: 1, rotate: 0 }}
+                    className="w-20 h-20 rounded-3xl bg-brand-gold/10 flex items-center justify-center text-brand-gold mx-auto glow-gold"
+                  >
+                    <Upload size={38} />
+                  </motion.div>
+                  <div className="space-y-1">
+                    <p className="text-base font-bold">{uploadPhaseLabel}</p>
+                    <p className="text-xs text-white/30">يدعم الصور والجداول — الحد الأقصى 10MB</p>
+                  </div>
+                  <div className="text-[10px] text-white/20 uppercase font-black tracking-widest">أو انقر للاختيار</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Manual Entry Section */}
@@ -2869,6 +2959,11 @@ function AutomationView({ models }: { models: Model[] }) {
 }
 
 function NotificationsView() {
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setIsLoading(false), 500);
+    return () => clearTimeout(t);
+  }, []);
   const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
   const [filter, setFilter] = useState<'all' | 'high' | 'achievement'>('all');
 
@@ -2898,12 +2993,14 @@ function NotificationsView() {
     window.open(`https://wa.me/${model.whatsapp_number}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
+  if (isLoading) return <NotificationsViewSkeleton />;
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="space-y-6 max-w-3xl mx-auto"
+      className="space-y-4 max-w-3xl mx-auto"
     >
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -2994,7 +3091,7 @@ function NotificationsView() {
                 exit={{ opacity: 0, x: 40, height: 0, marginBottom: 0 }}
                 transition={{ duration: 0.2 }}
                 className={cn(
-                  "glass-card bg-white/5 relative overflow-hidden",
+                  "notif-item",
                   priorityStyles.border
                 )}
               >
