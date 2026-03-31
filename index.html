@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- PWA Mobile Viewport: prevent zoom, handle safe areas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <title>eyedeaz internal system</title>
+
+    <!-- Theme & Status Bar -->
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#0a0a0a" />
+
+    <!-- iOS PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="eyedeaz" />
+    <link rel="apple-touch-icon" href="https://i.ibb.co/vYvH6yR/eyedeaz-logo.png" />
+
+    <!-- Android PWA -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="eyedeaz" />
+
+    <!-- SEO / Open Graph -->
+    <meta name="description" content="eyedeaz internal agency management system" />
+    <meta property="og:title" content="eyedeaz internal system" />
+    <meta property="og:description" content="Agency management for hosts and supervisors" />
+    <meta property="og:type" content="website" />
+
+    <!-- Splash / Icons -->
+    <!-- Apple Splash Screens -->
+    <link rel="apple-touch-startup-image" href="https://i.ibb.co/vYvH6yR/eyedeaz-logo.png" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+
+    <!-- Prevent flash of unstyled content -->
+    <style>
+      html, body, #root {
+        background-color: #0a0a0a;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      /* Prevent iOS overscroll bounce on body */
+      body {
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
