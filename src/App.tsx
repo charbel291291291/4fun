@@ -625,12 +625,21 @@ const AuthSystem = ({ onUnlock }: { onUnlock: (role: UserRole) => void }) => {
           className="max-w-md w-full space-y-12 relative z-10 text-center"
         >
           <div className="space-y-4">
-            <img 
-              src="https://i.ibb.co/vYvH6yR/eyedeaz-logo.png" 
-              alt="EYEDEAZ" 
-              className="h-24 w-auto mx-auto mb-8"
-              referrerPolicy="no-referrer"
-            />
+            <motion.a
+              href="https://eyedeaz.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.07, filter: 'drop-shadow(0 0 24px rgba(168,85,247,0.55))' }}
+              whileTap={{ scale: 0.96 }}
+              className="block w-fit mx-auto mb-8 cursor-pointer"
+            >
+              <img
+                src="https://i.ibb.co/vYvH6yR/eyedeaz-logo.png"
+                alt="EyeDeaz"
+                className="h-28 w-auto"
+                referrerPolicy="no-referrer"
+              />
+            </motion.a>
             <h2 className="text-3xl font-bold tracking-tight">اختيار نوع الدخول</h2>
             <p className="text-white/40 uppercase tracking-[0.2em] text-xs">Select Access Role</p>
           </div>
