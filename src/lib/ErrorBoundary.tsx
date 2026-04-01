@@ -23,6 +23,8 @@ interface Props {
 interface State {
   hasError: boolean;
   retryCount: number;
+  errorMessage: string;
+  errorStack: string;
 }
 
 // ─────────────────────────────────────────────
@@ -32,11 +34,15 @@ interface State {
 export class ErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, retryCount: 0 };
+    this.state = { hasError: false, retryCount: 0, errorMessage: '', errorStack: '' };
   }
 
-  static getDerivedStateFromError(): Partial<State> {
-    return { hasError: true };
+  static getDerivedStateFromError(error: Error): Partial<State> {
+    return {
+      hasError: true,
+      errorMessage: error?.message ?? String(error),
+      errorStack: error?.stack ?? '',
+    };
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
@@ -52,6 +58,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
     this.setState(prev => ({
       hasError: false,
       retryCount: prev.retryCount + 1,
+      errorMessage: '',
+      errorStack: '',
     }));
   };
 
@@ -59,7 +67,14 @@ export class ErrorBoundary extends React.Component<Props, State> {
     if (!this.state.hasError) return this.props.children;
     if (this.props.fallback) return this.props.fallback;
 
-    return <ErrorFallback onRetry={this.handleRetry} retryCount={this.state.retryCount} />;
+    return (
+      <ErrorFallback
+        onRetry={this.handleRetry}
+        retryCount={this.state.retryCount}
+        errorMessage={this.state.errorMessage}
+        errorStack={this.state.errorStack}
+      />
+    );
   }
 }
 
@@ -70,9 +85,13 @@ export class ErrorBoundary extends React.Component<Props, State> {
 function ErrorFallback({
   onRetry,
   retryCount,
+  errorMessage,
+  errorStack,
 }: {
   onRetry: () => void;
   retryCount: number;
+  errorMessage?: string;
+  errorStack?: string;
 }) {
   const maxRetries = 2;
   const exhausted = retryCount >= maxRetries;
@@ -141,6 +160,20 @@ function ErrorFallback({
             تحديث الصفحة
           </button>
         </div>
+
+        {/* Error details — shown to help diagnose */}
+        {errorMessage && (
+          <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-left" dir="ltr">
+            <p className="text-[10px] text-red-400 font-mono break-all leading-relaxed">
+              {errorMessage}
+            </p>
+            {errorStack && (
+              <p className="text-[9px] text-white/25 font-mono break-all leading-relaxed mt-2 line-clamp-4">
+                {errorStack.split('\n').slice(1, 4).join('\n')}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Session info — subtle, non-alarming */}
         <p className="text-[10px] text-white/15 uppercase tracking-widest">
