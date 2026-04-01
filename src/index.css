@@ -42,8 +42,6 @@
     -webkit-overflow-scrolling: touch;
     -webkit-tap-highlight-color: transparent;
     background: #0A0A0A;
-    /* Scrollbar on the correct side for RTL */
-    scrollbar-gutter: stable;
   }
 
   /* RTL-aware scrollbar */
@@ -229,6 +227,11 @@
   /* Text clamp */
   .line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
   .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+
+  /* Mobile bottom nav clearance — safely clears the bottom nav bar + iOS home indicator */
+  .pb-mobile-nav {
+    padding-bottom: max(7rem, calc(6rem + env(safe-area-inset-bottom, 0px)));
+  }
 }
 
 /* ─────────────────────────────────────────

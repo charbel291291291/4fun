@@ -48,12 +48,17 @@ export interface SessionHealth {
 const SESSION_ID_KEY = 'eyedeaz_session_id';
 
 function getOrCreateSessionId(): string {
-  let id = sessionStorage.getItem(SESSION_ID_KEY);
-  if (!id) {
-    id = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-    sessionStorage.setItem(SESSION_ID_KEY, id);
+  try {
+    let id = sessionStorage.getItem(SESSION_ID_KEY);
+    if (!id) {
+      id = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+      sessionStorage.setItem(SESSION_ID_KEY, id);
+    }
+    return id;
+  } catch {
+    // sessionStorage can throw in restricted contexts (private browsing, cross-origin iframes)
+    return `sess_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
   }
-  return id;
 }
 
 // ─────────────────────────────────────────────
@@ -197,12 +202,13 @@ export function clearLog(): void {
 
 if (typeof window !== 'undefined') {
   window.addEventListener('unhandledrejection', (event) => {
+    // Only log; don't call preventDefault() — it can suppress React's own error reporting
+    // and interfere with Suspense promise-throwing in React 18+/19+
     logError({
       category: 'unknown_error',
       message: 'Unhandled promise rejection',
       endpoint: undefined,
     });
-    event.preventDefault(); // prevent console noise in prod
   });
 
   window.addEventListener('online', () => setOfflineStatus(false));

@@ -1230,10 +1230,10 @@ export default function App() {
   };
 
   const MainContent = () => (
-    <main className="flex-1 min-w-0 overflow-x-hidden pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0 relative">
+    <main className="flex-1 min-w-0 overflow-x-hidden pb-mobile-nav md:pb-0 relative">
       {/* Background Glows */}
       <div className="pointer-events-none absolute top-0 end-0 w-[400px] h-[400px] bg-brand-purple/15 blur-[120px] rounded-full -z-10 translate-x-1/2 -translate-y-1/2" />
-      <div className="pointer-events-none absolute bottom-0 start-0 w-[350px] h-[350px] bg-brand-gold/8 blur-[100px] rounded-full -z-10 -translate-x-1/2 translate-y-1/2" />
+      <div className="pointer-events-none absolute bottom-0 start-0 w-[350px] h-[350px] bg-brand-gold/10 blur-[100px] rounded-full -z-10 -translate-x-1/2 translate-y-1/2" />
 
       {/* Top Bar - Mobile Only */}
       {isMobile && (
