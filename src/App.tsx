@@ -1080,27 +1080,41 @@ export default function App() {
   }, [isAuthenticated]);
 
   // Send native notification for critical model alerts
+  // Android Chrome (PWA) bans `new Notification()` — must use ServiceWorker API instead
   useEffect(() => {
     if (!isAuthenticated) return;
     if (notifPermission !== 'granted') return;
+
+    const sendNotif = async (title: string, opts: NotificationOptions) => {
+      try {
+        if ('serviceWorker' in navigator) {
+          const reg = await navigator.serviceWorker.ready;
+          // ServiceWorker path — works on Android Chrome PWA
+          await reg.showNotification(title, opts);
+        } else {
+          // Desktop fallback — new Notification() is allowed here
+          new window.Notification(title, opts);
+        }
+      } catch {
+        // Silently swallow — notification is non-critical, must never crash the app
+      }
+    };
+
     const inactiveModels = models.filter(m => m.performance_status === 'inactive');
     const underperforming = models.filter(m => m.performance_status === 'underperforming');
+
     if (inactiveModels.length > 0) {
-      const n = new window.Notification('⚠️ تنبيه: مذيعات خاملة', {
+      sendNotif('⚠️ تنبيه: مذيعات خاملة', {
         body: `${inactiveModels.map(m => m.name).join('، ')} — لم تبثن منذ فترة طويلة`,
-        icon: 'https://i.ibb.co/vYvH6yR/eyedeaz-logo.png',
         tag: 'inactive-alert',
-      } as NotificationOptions);
-      n.onclick = () => { window.focus(); setActiveTab('notifications'); };
+      });
     }
     if (underperforming.length > 0) {
       setTimeout(() => {
-        const n2 = new window.Notification('📉 أداء منخفض', {
+        sendNotif('📉 أداء منخفض', {
           body: `${underperforming.map(m => m.name).join('، ')} — تحتاج إلى متابعة عاجلة`,
-          icon: 'https://i.ibb.co/vYvH6yR/eyedeaz-logo.png',
           tag: 'underperform-alert',
-        } as NotificationOptions);
-        n2.onclick = () => { window.focus(); setActiveTab('models'); };
+        });
       }, 1500);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
