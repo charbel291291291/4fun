@@ -1002,7 +1002,7 @@ const WHATSAPP_MESSAGES = {
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
@@ -1230,27 +1230,24 @@ export default function App() {
   };
 
   const MainContent = () => (
-    <main className={cn(
-      "flex-1 transition-all duration-500 pb-24 md:pb-0 relative",
-      !isMobile && (isSidebarOpen ? "mr-[280px]" : "mr-[80px]")
-    )}>
+    <main className="flex-1 min-w-0 overflow-x-hidden pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0 relative">
       {/* Background Glows */}
-      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-brand-purple/20 blur-[120px] rounded-full -z-10" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-brand-gold/10 blur-[100px] rounded-full -z-10" />
+      <div className="pointer-events-none absolute top-0 end-0 w-[400px] h-[400px] bg-brand-purple/15 blur-[120px] rounded-full -z-10 translate-x-1/2 -translate-y-1/2" />
+      <div className="pointer-events-none absolute bottom-0 start-0 w-[350px] h-[350px] bg-brand-gold/8 blur-[100px] rounded-full -z-10 -translate-x-1/2 translate-y-1/2" />
 
       {/* Top Bar - Mobile Only */}
       {isMobile && (
         <div className="sticky top-0 z-40 bg-black/60 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
-          <a 
+          <a
             href="https://eyedeaz227.vercel.app/"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2"
           >
-            <div className="w-8 h-8 bg-brand-gold rounded-lg flex items-center justify-center">
-              <img src="https://i.ibb.co/vYvH6yR/eyedeaz-logo.png" className="w-5 h-5 object-contain" alt="EYEDEAZ" />
+            <div className="w-8 h-8 bg-brand-gold rounded-lg flex items-center justify-center shrink-0">
+              <span className="text-black text-[10px] font-black">EYE</span>
             </div>
-            <span className="text-sm font-black">EYEDEAZ</span>
+            <span className="text-sm font-black tracking-tight">EYEDEAZ</span>
           </a>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/40">
@@ -1263,7 +1260,7 @@ export default function App() {
         </div>
       )}
 
-      <div className="p-4 md:p-10 max-w-7xl mx-auto">
+      <div className="p-4 md:p-8 lg:p-10 max-w-7xl mx-auto w-full">
         <header className="hidden md:flex justify-between items-center mb-10">
           <div className="flex items-center gap-4">
             {isEditingAgencyName && canEditAgency ? (
@@ -1325,7 +1322,7 @@ export default function App() {
           {activeTab === 'dashboard' && <SectionErrorBoundary key="dashboard"><DashboardView userRole={userRole} models={filteredModels} /></SectionErrorBoundary>}
           {activeTab === 'models' && <SectionErrorBoundary key="models"><ModelsView userRole={userRole} models={filteredModels} setModels={setModels} showAddModal={showAddModal} setShowAddModal={setShowAddModal} /></SectionErrorBoundary>}
           {activeTab === 'team' && userRole === 'agent' && <SectionErrorBoundary key="team"><TeamView /></SectionErrorBoundary>}
-          {activeTab === 'automation' && userRole === 'agent' && <SectionErrorBoundary key="automation"><AutomationView models={filteredModels} /></SectionErrorBoundary>}
+          {activeTab === 'automation' && <SectionErrorBoundary key="automation"><AutomationView models={filteredModels} /></SectionErrorBoundary>}
           {activeTab === 'notifications' && <SectionErrorBoundary key="notifications"><NotificationsView /></SectionErrorBoundary>}
           {activeTab === 'chat' && <SectionErrorBoundary key="chat"><ChatView /></SectionErrorBoundary>}
           {activeTab === 'schedule' && <SectionErrorBoundary key="schedule"><ScheduleView /></SectionErrorBoundary>}
@@ -1340,7 +1337,7 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen bg-brand-dark flex flex-col md:flex-row text-white overflow-x-hidden">
+    <div className="min-h-screen bg-brand-dark flex flex-col md:flex-row text-white overflow-x-hidden" dir="rtl">
       <AnimatePresence>
         {isOffline && <OfflineIndicator key="offline" />}
         {justRestored && !isOffline && <RestoredIndicator key="restored" />}
@@ -1384,10 +1381,10 @@ export default function App() {
         <>
           {/* Sidebar - Desktop Only */}
           {!isMobile && (
-            <motion.aside 
+            <motion.aside
               initial={false}
               animate={{ width: isSidebarOpen ? 280 : 80 }}
-              className="bg-black/40 backdrop-blur-xl border-l border-white/10 flex flex-col h-screen sticky top-0 z-50"
+              className="bg-black/40 backdrop-blur-xl border-e border-white/10 flex flex-col h-screen sticky top-0 z-50 shrink-0 overflow-hidden"
             >
               <div className="p-6 flex items-center justify-between">
                 {isSidebarOpen && (
