@@ -82,26 +82,27 @@ import { cn } from './lib/utils';
 import type { Model, Supervisor, Notification, WhatsAppMessage, UserRole, LevelName, LevelConfig, AgencyConfig } from './types';
 
 const LEVELS: LevelConfig[] = [
-  { name: 'Baby1', threshold: 150000, bonus: 500, agentShare: 100, hostSalary: 400, vipLevel: 1 },
-  { name: 'Baby2', threshold: 250000, bonus: 800, agentShare: 150, hostSalary: 650, vipLevel: 1 },
-  { name: 'Baby3', threshold: 350000, bonus: 1200, agentShare: 200, hostSalary: 1000, vipLevel: 1 },
-  { name: 'D1', threshold: 450000, bonus: 1500, agentShare: 300, hostSalary: 1200, vipLevel: 2 },
-  { name: 'D2', threshold: 600000, bonus: 2000, agentShare: 400, hostSalary: 1600, vipLevel: 2 },
-  { name: 'D3', threshold: 800000, bonus: 2800, agentShare: 500, hostSalary: 2300, vipLevel: 2 },
-  { name: 'C1', threshold: 1100000, bonus: 4000, agentShare: 800, hostSalary: 3200, vipLevel: 3 },
-  { name: 'C2', threshold: 1500000, bonus: 5500, agentShare: 1000, hostSalary: 4500, vipLevel: 3 },
-  { name: 'C3', threshold: 2000000, bonus: 7500, agentShare: 1500, hostSalary: 6000, vipLevel: 3 },
-  { name: 'B1', threshold: 2700000, bonus: 10000, agentShare: 2000, hostSalary: 8000, vipLevel: 4 },
-  { name: 'B2', threshold: 3300000, bonus: 12500, agentShare: 2500, hostSalary: 10000, vipLevel: 4 },
-  { name: 'B3', threshold: 4200000, bonus: 16000, agentShare: 3200, hostSalary: 12800, vipLevel: 4 },
-  { name: 'A1', threshold: 5200000, bonus: 20000, agentShare: 4000, hostSalary: 16000, vipLevel: 5 },
-  { name: 'A2', threshold: 10000000, bonus: 40000, agentShare: 8000, hostSalary: 32000, vipLevel: 6 },
-  { name: 'A3', threshold: 20000000, bonus: 80000, agentShare: 16000, hostSalary: 64000, vipLevel: 7 },
-  { name: 'S1', threshold: 30000000, bonus: 120000, agentShare: 24000, hostSalary: 96000, vipLevel: 8 },
-  { name: 'S2', threshold: 40000000, bonus: 160000, agentShare: 32000, hostSalary: 128000, vipLevel: 9 },
-  { name: 'S3', threshold: 60000000, bonus: 240000, agentShare: 48000, hostSalary: 192000, vipLevel: 10 },
-  { name: 'SS1', threshold: 90000000, bonus: 360000, agentShare: 72000, hostSalary: 288000, vipLevel: 10 },
-  { name: 'SS2', threshold: 150000000, bonus: 600000, agentShare: 120000, hostSalary: 480000, vipLevel: 10 },
+  //  name     threshold    bonusPts    agentPts   hostSalary  agentSalary  days   hours  vip
+  { name:'Baby1', threshold:150000,  bonusPts:140000,  agentPts:100000,  hostSalary:5,    agentSalary:2,    targetDays:5,    targetHours:10,  vipLevel:1 },
+  { name:'Baby2', threshold:250000,  bonusPts:230000,  agentPts:180000,  hostSalary:8,    agentSalary:3,    targetDays:5,    targetHours:10,  vipLevel:1 },
+  { name:'Baby3', threshold:350000,  bonusPts:330000,  agentPts:250000,  hostSalary:11,   agentSalary:4,    targetDays:5,    targetHours:10,  vipLevel:1 },
+  { name:'D1',    threshold:450000,  bonusPts:460000,  agentPts:280000,  hostSalary:15,   agentSalary:5,    targetDays:5,    targetHours:10,  vipLevel:2 },
+  { name:'D2',    threshold:600000,  bonusPts:630000,  agentPts:350000,  hostSalary:20,   agentSalary:6,    targetDays:5,    targetHours:10,  vipLevel:2 },
+  { name:'D3',    threshold:800000,  bonusPts:1100000, agentPts:400000,  hostSalary:31,   agentSalary:6,    targetDays:5,    targetHours:10,  vipLevel:2 },
+  { name:'C1',    threshold:1100000, bonusPts:1400000, agentPts:620000,  hostSalary:40,   agentSalary:10,   targetDays:5,    targetHours:10,  vipLevel:3 },
+  { name:'C2',    threshold:1500000, bonusPts:1800000, agentPts:1000000, hostSalary:53,   agentSalary:16,   targetDays:5,    targetHours:10,  vipLevel:3 },
+  { name:'C3',    threshold:2000000, bonusPts:2500000, agentPts:1200000, hostSalary:73,   agentSalary:19,   targetDays:5,    targetHours:10,  vipLevel:3 },
+  { name:'B1',    threshold:2700000, bonusPts:3200000, agentPts:2000000, hostSalary:95,   agentSalary:32,   targetDays:null, targetHours:null, vipLevel:4 },
+  { name:'B2',    threshold:3300000, bonusPts:3800000, agentPts:2500000, hostSalary:115,  agentSalary:40,   targetDays:null, targetHours:null, vipLevel:4 },
+  { name:'B3',    threshold:4200000, bonusPts:4900000, agentPts:2600000, hostSalary:147,  agentSalary:42,   targetDays:null, targetHours:null, vipLevel:4 },
+  { name:'A1',    threshold:5200000, bonusPts:5700000, agentPts:3500000, hostSalary:176,  agentSalary:56,   targetDays:null, targetHours:null, vipLevel:5 },
+  { name:'A2',    threshold:10000000,bonusPts:14600000,agentPts:6300000, hostSalary:397,  agentSalary:101,  targetDays:null, targetHours:null, vipLevel:6 },
+  { name:'A3',    threshold:20000000,bonusPts:30500000,agentPts:11500000,hostSalary:815,  agentSalary:185,  targetDays:null, targetHours:null, vipLevel:7 },
+  { name:'S1',    threshold:30000000,bonusPts:45000000,agentPts:19000000,hostSalary:1210, agentSalary:306,  targetDays:null, targetHours:null, vipLevel:8 },
+  { name:'S2',    threshold:40000000,bonusPts:58000000,agentPts:24000000,hostSalary:1581, agentSalary:387,  targetDays:null, targetHours:null, vipLevel:9 },
+  { name:'S3',    threshold:60000000,bonusPts:85000000,agentPts:41000000,hostSalary:2339, agentSalary:661,  targetDays:null, targetHours:null, vipLevel:10 },
+  { name:'SS1',   threshold:90000000,bonusPts:123000000,agentPts:62000000,hostSalary:3435,agentSalary:1000, targetDays:null, targetHours:null, vipLevel:10 },
+  { name:'SS2',   threshold:150000000,bonusPts:220000000,agentPts:102000000,hostSalary:5968,agentSalary:1645,targetDays:null,targetHours:null, vipLevel:10 },
 ];
 
 const getLevelForEarnings = (earnings: number): LevelConfig => {
@@ -1562,8 +1563,8 @@ function DashboardView({ userRole, models }: { userRole: UserRole, models: Model
     return () => clearTimeout(t);
   }, []);
   const totalEarnings = models.reduce((acc, m) => acc + m.earnings, 0);
-  const totalBonuses = models.reduce((acc, m) => acc + getLevelForEarnings(m.earnings).bonus, 0);
-  const totalAgentShare = models.reduce((acc, m) => acc + getLevelForEarnings(m.earnings).agentShare, 0);
+  const totalBonuses = models.reduce((acc, m) => acc + getLevelForEarnings(m.earnings).bonusPts, 0);
+  const totalAgentShare = models.reduce((acc, m) => acc + getLevelForEarnings(m.earnings).agentPts, 0);
   const agencyProfit = totalEarnings - totalBonuses - totalAgentShare;
 
   const levelCounts = models.reduce((acc, m) => {
@@ -2927,18 +2928,19 @@ function AutomationView({ models }: { models: Model[] }) {
 
           {/* Summary cards */}
           {(() => {
-            const totalPoints   = uploadedData.reduce((s, r) => s + r.earnings, 0);
-            const totalBonus    = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).bonus, 0);
-            const totalSalary   = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).hostSalary, 0);
-            const totalAgent    = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).agentShare, 0);
-            const totalPayout   = totalBonus + totalAgent;
+            const totalPoints     = uploadedData.reduce((s, r) => s + r.earnings, 0);
+            const totalHostSal    = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).hostSalary, 0);
+            const totalAgentSal   = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).agentSalary, 0);
+            const totalBonusPts   = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).bonusPts, 0);
+            const totalAgentPts   = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).agentPts, 0);
+            const totalPayout     = totalHostSal + totalAgentSal;
             return (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                  { label: 'إجمالي النقاط', value: totalPoints.toLocaleString(), sub: 'نقطة', color: 'text-brand-gold', bg: 'bg-brand-gold/10', icon: TrendingUp },
-                  { label: 'إجمالي المكافآت', value: `$${totalBonus.toLocaleString()}`, sub: 'USD', color: 'text-green-400', bg: 'bg-green-500/10', icon: Award },
-                  { label: 'إجمالي رواتب المضيفات', value: `$${totalSalary.toLocaleString()}`, sub: 'USD', color: 'text-blue-400', bg: 'bg-blue-500/10', icon: Users },
-                  { label: 'عمولة الوكيل الكلية', value: `$${totalAgent.toLocaleString()}`, sub: `إجمالي الصرف: $${totalPayout.toLocaleString()}`, color: 'text-brand-purple-light', bg: 'bg-brand-purple/10', icon: DollarSign },
+                  { label: 'إجمالي النقاط المحققة', value: totalPoints.toLocaleString(), sub: 'نقطة', color: 'text-brand-gold', bg: 'bg-brand-gold/10', icon: TrendingUp },
+                  { label: 'إجمالي رواتب المضيفات', value: `$${totalHostSal.toLocaleString()}`, sub: 'USD', color: 'text-green-400', bg: 'bg-green-500/10', icon: Users },
+                  { label: 'عمولات الوكيل الكلية', value: `$${totalAgentSal.toLocaleString()}`, sub: `إجمالي الصرف: $${totalPayout.toLocaleString()}`, color: 'text-brand-purple-light', bg: 'bg-brand-purple/10', icon: DollarSign },
+                  { label: 'نقاط المكافأة + الوكيل', value: (totalBonusPts + totalAgentPts).toLocaleString(), sub: `وكيل: ${totalAgentPts.toLocaleString()} نقطة`, color: 'text-blue-400', bg: 'bg-blue-500/10', icon: Award },
                 ].map((s, i) => (
                   <div key={i} className={cn('glass-card p-4 space-y-2 border-white/5', s.bg)}>
                     <div className={cn('p-2 rounded-lg bg-black/20 w-fit', s.color)}><s.icon size={16} /></div>
@@ -2961,9 +2963,9 @@ function AutomationView({ models }: { models: Model[] }) {
                   <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">النقاط الشهرية</th>
                   <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">المستوى</th>
                   <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">التقدم للمستوى التالي</th>
-                  <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">المكافأة</th>
-                  <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">الراتب</th>
-                  <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">عمولة الوكيل</th>
+                  <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">راتب المضيف ($)</th>
+                  <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">نقاط المكافأة</th>
+                  <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">عمولة الوكيل ($)</th>
                   <th className="px-4 py-3.5 text-[10px] font-black text-white/40 uppercase tracking-widest">الحالة</th>
                 </tr>
               </thead>
@@ -3030,16 +3032,16 @@ function AutomationView({ models }: { models: Model[] }) {
                         )}
                       </td>
                       <td className="px-4 py-4">
-                        <p className="text-green-400 font-black">${level.bonus.toLocaleString()}</p>
-                        <p className="text-[9px] text-white/30">مكافأة</p>
+                        <p className="text-green-400 font-black">${level.hostSalary.toLocaleString()}</p>
+                        <p className="text-[9px] text-white/30">راتب المضيف</p>
                       </td>
                       <td className="px-4 py-4">
-                        <p className="font-black">${level.hostSalary.toLocaleString()}</p>
-                        <p className="text-[9px] text-white/30">راتب صافي</p>
+                        <p className="font-black text-brand-purple-light">{level.bonusPts.toLocaleString()}</p>
+                        <p className="text-[9px] text-white/30">نقاط مكافأة</p>
                       </td>
                       <td className="px-4 py-4">
-                        <p className="text-brand-gold font-black">${level.agentShare.toLocaleString()}</p>
-                        <p className="text-[9px] text-white/30">للوكيل</p>
+                        <p className="text-brand-gold font-black">${level.agentSalary.toLocaleString()}</p>
+                        <p className="text-[9px] text-white/30">عمولة الوكيل</p>
                       </td>
                       <td className="px-4 py-4">
                         <span className={cn('px-2.5 py-1 rounded-xl text-[10px] font-black', perfColors[perfStatus])}>
@@ -3053,18 +3055,18 @@ function AutomationView({ models }: { models: Model[] }) {
               {/* Totals row */}
               {uploadedData.length > 1 && (() => {
                 const tPts  = uploadedData.reduce((s, r) => s + r.earnings, 0);
-                const tBon  = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).bonus, 0);
-                const tSal  = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).hostSalary, 0);
-                const tAgt  = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).agentShare, 0);
+                const tHostSal = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).hostSalary, 0);
+                const tBonPts  = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).bonusPts, 0);
+                const tAgtSal  = uploadedData.reduce((s, r) => s + getLevelForEarnings(r.earnings).agentSalary, 0);
                 return (
                   <tfoot>
                     <tr className="bg-brand-gold/5 border-t-2 border-brand-gold/20">
                       <td colSpan={2} className="px-4 py-4 font-black text-brand-gold text-sm">الإجمالي ({uploadedData.length} مذيعة)</td>
                       <td className="px-4 py-4 font-black text-brand-gold">{tPts.toLocaleString()}</td>
                       <td colSpan={2} />
-                      <td className="px-4 py-4 font-black text-green-400">${tBon.toLocaleString()}</td>
-                      <td className="px-4 py-4 font-black">${tSal.toLocaleString()}</td>
-                      <td className="px-4 py-4 font-black text-brand-gold">${tAgt.toLocaleString()}</td>
+                      <td className="px-4 py-4 font-black text-green-400">${tHostSal.toLocaleString()}</td>
+                      <td className="px-4 py-4 font-black text-brand-purple-light">{tBonPts.toLocaleString()}</td>
+                      <td className="px-4 py-4 font-black text-brand-gold">${tAgtSal.toLocaleString()}</td>
                       <td />
                     </tr>
                   </tfoot>
@@ -3085,26 +3087,26 @@ function AutomationView({ models }: { models: Model[] }) {
               <table className="w-full text-right text-xs min-w-[600px]">
                 <thead>
                   <tr className="bg-white/3">
-                    {['المستوى','الحد الأدنى للنقاط','المكافأة','الراتب الصافي','عمولة الوكيل','VIP'].map(h => (
-                      <th key={h} className="px-4 py-2.5 text-[9px] font-black text-white/35 uppercase tracking-wider">{h}</th>
+                    {['المستوى','الأيام','الساعات','التارجت','نقاط المكافأة','نسبة الوكيل (نقاط)','راتب المضيف $','عمولة الوكيل $','VIP'].map(h => (
+                      <th key={h} className="px-3 py-2.5 text-[9px] font-black text-white/35 uppercase tracking-wider whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/4">
                   {LEVELS.map((l) => {
                     const isTop = l.name === 'SS2';
+                    const nameColor = l.name.startsWith('SS') ? 'text-brand-gold' : l.name.startsWith('S') ? 'text-purple-300' : l.name.startsWith('A') ? 'text-blue-300' : l.name.startsWith('B') ? 'text-green-300' : 'text-white/70';
                     return (
                       <tr key={l.name} className={cn('hover:bg-white/4 transition-colors', isTop && 'bg-brand-gold/5')}>
-                        <td className="px-4 py-2.5">
-                          <span className={cn('font-black', l.name.startsWith('SS') ? 'text-brand-gold' : l.name.startsWith('S') ? 'text-purple-300' : l.name.startsWith('A') ? 'text-blue-300' : 'text-white/70')}>
-                            {l.name}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2.5 font-mono text-white/60">{l.threshold.toLocaleString()}</td>
-                        <td className="px-4 py-2.5 text-green-400 font-bold">${l.bonus.toLocaleString()}</td>
-                        <td className="px-4 py-2.5 font-bold">${l.hostSalary.toLocaleString()}</td>
-                        <td className="px-4 py-2.5 text-brand-gold font-bold">${l.agentShare.toLocaleString()}</td>
-                        <td className="px-4 py-2.5 text-white/40">{l.vipLevel}</td>
+                        <td className="px-3 py-2.5"><span className={cn('font-black', nameColor)}>{l.name}</span></td>
+                        <td className="px-3 py-2.5 text-white/50 text-center">{l.targetDays ?? <span className="text-white/25">غير محدود</span>}</td>
+                        <td className="px-3 py-2.5 text-white/50 text-center">{l.targetHours ?? <span className="text-white/25">—</span>}</td>
+                        <td className="px-3 py-2.5 font-mono text-brand-gold font-bold">{l.threshold.toLocaleString()}</td>
+                        <td className="px-3 py-2.5 font-mono text-brand-purple-light">{l.bonusPts.toLocaleString()}</td>
+                        <td className="px-3 py-2.5 font-mono text-blue-400">{l.agentPts.toLocaleString()}</td>
+                        <td className="px-3 py-2.5 text-green-400 font-bold">${l.hostSalary.toLocaleString()}</td>
+                        <td className="px-3 py-2.5 text-brand-gold font-bold">${l.agentSalary.toLocaleString()}</td>
+                        <td className="px-3 py-2.5 text-white/40 text-center">{l.vipLevel}</td>
                       </tr>
                     );
                   })}
@@ -3127,24 +3129,24 @@ function AutomationView({ models }: { models: Model[] }) {
         </motion.div>
       )}
 
-      {/* Logic Rules Preview */}
+      {/* Policy summary */}
       <div className="glass-card p-6 bg-white/5 border-white/5">
         <h4 className="text-sm font-bold mb-4 flex items-center gap-2">
-          <Settings size={16} className="text-brand-gold" /> قواعد الحساب الحالية
+          <Settings size={16} className="text-brand-gold" /> سياسة الحساب المعتمدة
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-3 rounded-xl bg-black/20 border border-white/5">
-            <p className="text-[10px] text-white/40 uppercase mb-1">نسبة الوكيل</p>
-            <p className="text-sm font-bold">متغيرة (10% - 25%) حسب المستوى</p>
-          </div>
-          <div className="p-3 rounded-xl bg-black/20 border border-white/5">
-            <p className="text-[10px] text-white/40 uppercase mb-1">نظام المكافآت</p>
-            <p className="text-sm font-bold">تراكمي يبدأ من مستوى Baby2</p>
-          </div>
-          <div className="p-3 rounded-xl bg-black/20 border border-white/5">
-            <p className="text-[10px] text-white/40 uppercase mb-1">العملة المعتمدة</p>
-            <p className="text-sm font-bold">الدولار الأمريكي (USD)</p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          {[
+            { label: 'الهدف الشهري', value: '20 مستوى', sub: 'Baby1 → SS2' },
+            { label: 'شرط الأيام (Baby→C3)', value: '5 أيام / شهر', sub: '10 ساعات / يوم' },
+            { label: 'شرط الأيام (B1→SS2)', value: 'غير محدود', sub: 'بدون حد للأيام' },
+            { label: 'العملة المعتمدة', value: 'USD $', sub: 'الرواتب والعمولات' },
+          ].map((item, i) => (
+            <div key={i} className="p-3 rounded-xl bg-black/20 border border-white/5">
+              <p className="text-[9px] text-white/35 uppercase font-black mb-1">{item.label}</p>
+              <p className="text-sm font-black text-white/80">{item.value}</p>
+              <p className="text-[10px] text-white/30 mt-0.5">{item.sub}</p>
+            </div>
+          ))}
         </div>
       </div>
     </motion.div>

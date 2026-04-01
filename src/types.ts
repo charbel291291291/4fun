@@ -11,10 +11,13 @@ export type LevelName =
 
 export interface LevelConfig {
   name: LevelName;
-  threshold: number;
-  bonus: number;
-  agentShare: number;
-  hostSalary: number;
+  threshold: number;     // monthly points target (التارجت)
+  bonusPts: number;      // platform bonus points paid to agency (المكافأة)
+  agentPts: number;      // agent's share in points (نسبة الوكيل - نقاط)
+  hostSalary: number;    // host monthly salary in USD (راتب المضيف)
+  agentSalary: number;   // agent commission in USD (نسبة الوكيل - $)
+  targetDays: number | null;   // required broadcast days (null = unlimited)
+  targetHours: number | null;  // required hours per day (null = unlimited)
   vipLevel: number;
 }
 
